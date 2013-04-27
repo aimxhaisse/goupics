@@ -13,6 +13,7 @@ import (
 // Config contains the various configurations of our project
 type Config struct {
 	ListenOn string // Interface to listen on
+	ProjectName string // Name of the project
 }
 
 // DynamicHandlerFuncParams holds parameters dedicated to a page handler
@@ -28,12 +29,23 @@ type Gow struct {
 	Router    *mux.Router                   // Router to all requests	
 }
 
+// Parameters common to all pages
+type PageParams struct {
+	Name	string // Name of the page (home.html -> "home")
+	Title	string // Title of the page
+	Project string // Name of the project
+}
+
+type HomePageParams struct {
+	PageParams
+}
+
 // DynamicHandlerFunc serves a http request
 type DynamicHandlerFunc func(*DynamicHandlerFuncParams, http.ResponseWriter, *http.Request)
 
 // HomeHandler is a DynamicHandlerFunc that serves the home page
 func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
-	p.Template.Execute(w, nil)
+	p.Template.Execute(w, &HomePageParams{PageParams{"home", "Title", "Project Name"}})
 }
 
 // BuildHandler maps DynamicHandlerFunc to http.HandlerFunc
