@@ -82,28 +82,28 @@ check-env || exit 1
 
 case $1 in
     "stop")
-	ok "Stopping $PROJECT"
+	ok "stopping $PROJECT"
 	if [ -f $CHDIR/$PID ]
 	then
 	    kill -9 $(cat $CHDIR/$PID)
 	    rm -f $CHDIR/$PID
 	fi
-	ok "Daemon stopped"
+	ok "daemon stopped"
 	exit 0
 	;;
 
     "start")
 	if [ $CHROOT = "yes" ]
 	then
-	    ok "Starting $PROJECT with chroot"
+	    ok "starting $PROJECT with chroot"
 	    ./daemonize -p $PID -j -u $USER -c $CHDIR -- ./$PROJECT -c $CONFIG -l $LOG
 	    warn-upon-failure $? "Can't start the daemon, check your config" || exit 1
 	else
-	    ok "Starting $PROJECT"
+	    ok "starting $PROJECT"
 	    ./daemonize -p $PID -u $USER -c $CHDIR -- ./$PROJECT -c $CONFIG -l $LOG
 	    warn-upon-failure $? "Can't start the daemon, check your config" || exit 1
 	fi
-	ok "Daemon started"
+	ok "daemon started"
 	exit 0
 	;;
 
@@ -123,6 +123,17 @@ case $1 in
         fi
         exit 0
         ;;
+
+    "log")
+	if [ -f $CHDIR/$LOG ]
+	then
+	    ok "last 25 log entries:"
+	    tail -n 25 $CHDIR/$LOG
+	else
+	    ko "can't find log file ($CHDIR/$LOG)"
+	fi
+	exit 0
+	;;
 
     "build")
 	# build the daemonizer
