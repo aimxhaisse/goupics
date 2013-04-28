@@ -1,5 +1,5 @@
 BEAN
-===
+====
 
 A template to build websites in go.
 
@@ -21,14 +21,40 @@ Quick start
 
     git clone github.com:aimxhaisse/bean
     cd bean
-    ./make.bash
-    $EDITOR bean.json
-    ./bean.rc start
+    ./all.bash build
+    ./all.bash start
+
+Real start
+----------
+
+This could be automated but you plan to extend this, so I don't want
+to add any sort of magic there.
+
+    # replace myproject by your project name in the following lines
+
+    git clone github.com:aimxhaisse/bean myproject
+    cd myproject
+
+    # edit the variables at the top of all.bash
+    $EDITOR all.bash
+
+    # rename sources
+    
+
+    # this seems dangerous, I ensure it's safe with a fresh clone
+    # sed...
+
+    ./all.bash build
+    ./all.bash start
+    ./all.bash status
+
+    # if this is ok, commit and start to play
+    git commit -am "Having setup myproject from github.com:aimxhaisse/bean"
 
 Structure
 ---------
 
-* bean.bash is a shell script to manage your website
+* all.bash is a shell script to manage your website (build, start, stop, ...)
 * daemonizer/ contains sources for the daemonizer
 * root/ contains dynamic files such as the pid
 * root/www/static contains files that are served statically (css, js, images)
@@ -38,6 +64,6 @@ Security
 --------
 
 It is possible to run your website chrooted (the process won't be able
-to leave its directory). For this you need to build your website in
-static. Also, your code must not rely on absolute paths, use paths
+to leave its directory). For this you need to set CHROOT to "yes" in
+all.bash. Also, your code must not rely on absolute paths, use paths
 relative to the deployment directory.
