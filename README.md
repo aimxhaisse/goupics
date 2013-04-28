@@ -24,6 +24,8 @@ Quick start
     ./all.bash build
     ./all.bash start
 
+    # browse http://localhost:8080
+
 Real start
 ----------
 
@@ -32,17 +34,20 @@ to add any sort of magic there.
 
     # replace myproject by your project name in the following lines
 
+    # clone the project
     git clone github.com:aimxhaisse/bean myproject
     cd myproject
+
+    # rename sources/configs yo your project's name
+
+    # I ensure it's safe with a fresh clone
+    # sed.
 
     # edit the variables at the top of all.bash
     $EDITOR all.bash
 
-    # rename sources
-    
-
-    # this seems dangerous, I ensure it's safe with a fresh clone
-    # sed...
+    # optionally edit the configuration of your website
+    $EDITOR root/myproject.json
 
     ./all.bash build
     ./all.bash start
