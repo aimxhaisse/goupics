@@ -8,6 +8,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"flag"
+)
+
+// Flag settings
+var (
+	configPath = flag.String("c", "", "path to the configuration file (e.g, bean.json)")
+	logPath = flag.String("l", "", "path to the log file (e.g, bean.log)")
 )
 
 // Config contains the various configurations of our project
@@ -22,9 +30,9 @@ type DynamicHandlerFuncParams struct {
 	Template *template.Template // Template of the dynamic page
 }
 
-// Gow holds variables common to all handlers
-type Gow struct {
-	Config    *Config                       // Config holds the configuration of Gow
+// Bean holds variables common to all handlers
+type Bean struct {
+	Config    *Config                       // Config holds the configuration of Bean
 	Templates map[string]*template.Template // Templates is a cache of parsed templates
 	Router    *mux.Router                   // Router to all requests	
 }
@@ -49,7 +57,7 @@ func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Req
 }
 
 // BuildHandler maps DynamicHandlerFunc to http.HandlerFunc
-func (g *Gow) BuildDynamicdHandler(handler DynamicHandlerFunc, path string) http.HandlerFunc {
+func (g *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, path string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl, in_cache := g.Templates[path]
 		if !in_cache {
@@ -69,9 +77,9 @@ func (g *Gow) BuildDynamicdHandler(handler DynamicHandlerFunc, path string) http
 	}
 }
 
-// NewGow creates a new Gow from a configuration path
-func NewGow(path string) *Gow {
-	file, err := ioutil.ReadFile(path)
+// NewBean creates a new Bean from a configuration path
+func NewBean(cfg_path, log_path string) *Bean {
+	file, err := ioutil.ReadFile(cfg_path)
 	if err != nil {
 		log.Fatalf("config error: %v", err)
 	}
@@ -80,10 +88,13 @@ func NewGow(path string) *Gow {
 	if err != nil {
 		log.Fatalf("config error: %v", err)
 	}
-
+	writer, err := os.OpenFile(log_path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("Unable to open file log: %v", err)
+	}
+	log.SetOutput(writer)
 	r := mux.NewRouter()
-
-	return &Gow{
+	return &Bean{
 		&cfg,
 		make(map[string]*template.Template),
 		r,
@@ -91,9 +102,10 @@ func NewGow(path string) *Gow {
 }
 
 func main() {
-	gow := NewGow("gow.json")
-	gow.Router.HandleFunc("/", gow.BuildDynamicdHandler(HomeHandler, "home.html"))
+	flag.Parse()
+	bean := NewBean(*configPath, *logPath)
+	bean.Router.HandleFunc("/", bean.BuildDynamicdHandler(HomeHandler, "home.html"))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("www/static"))))
-	http.Handle("/", gow.Router)
-	log.Fatal(http.ListenAndServe(gow.Config.ListenOn, nil))
+	http.Handle("/", bean.Router)
+	log.Fatal(http.ListenAndServe(bean.Config.ListenOn, nil))
 }

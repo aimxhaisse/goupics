@@ -1,4 +1,4 @@
-GOW
+BEAN
 ===
 
 A template to build websites in go.
@@ -19,20 +19,20 @@ What it contains
 Quick start
 -----------
 
-    git clone github.com:aimxhaisse/gow
-    cd gow
-    make
-    $EDITOR gow.json
-    ./gow.rc start
+    git clone github.com:aimxhaisse/bean
+    cd bean
+    ./make.bash
+    $EDITOR bean.json
+    ./bean.rc start
 
 Structure
 ---------
 
-* gow.rc is a shell script to manage your website
+* bean.bash is a shell script to manage your website
 * daemonizer/ contains sources for the daemonizer
-* run/ contains dynamic files such as the pid
-* www/static contains files that are served statically (css, js, images)
-* www/templates contains template files for your pages
+* root/ contains dynamic files such as the pid
+* root/www/static contains files that are served statically (css, js, images)
+* root/www/static contains template files for your pages
 
 Security
 --------
@@ -40,4 +40,4 @@ Security
 It is possible to run your website chrooted (the process won't be able
 to leave its directory). For this you need to build your website in
 static. Also, your code must not rely on absolute paths, use paths
-relative to the current directory.
+relative to the deployment directory.

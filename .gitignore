@@ -1,3 +1,6 @@
 daemonize
 *.o
 gow
+*.log
+*.pid
+root/bean

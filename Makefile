@@ -5,10 +5,10 @@ CFLAGS	:= -W -Wall -pedantic -ansi -O3 -Wno-unused-result
 CC	:= gcc
 
 all: $(CMD)
-	go build
+	go build -o deployment/bean
 
 $(CMD):	$(OBJ)
 	$(CC) $(OBJ) -o $(CMD)
 
 clean:
-	rm -f $(OBJ) $(CMD) gow
+	rm -f $(OBJ) $(CMD) deployment/bean
