@@ -32,9 +32,8 @@ type DynamicHandlerFuncParams struct {
 
 // Bean holds variables common to all handlers
 type Bean struct {
-	Config    *Config                       // Config holds the configuration of Bean
-	Templates map[string]*template.Template // Templates is a cache of parsed templates
-	Router    *mux.Router                   // Router to all requests	
+	Config *Config     // Config holds the configuration of Bean
+	Router *mux.Router // Router to all requests	
 }
 
 // Parameters common to all pages
@@ -53,25 +52,22 @@ type DynamicHandlerFunc func(*DynamicHandlerFuncParams, http.ResponseWriter, *ht
 
 // HomeHandler is a DynamicHandlerFunc that serves the home page
 func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
-	p.Template.Execute(w, &HomePageParams{PageParams{"home", "Title", "Project Name"}})
+	err := p.Template.Execute(w, HomePageParams{PageParams{"home", "Title", "Project Name"}})
+	if err != nil {
+		log.Printf("error while serving template home: %s", err)
+	}
 }
 
 // BuildHandler maps DynamicHandlerFunc to http.HandlerFunc
 func (b *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, name string) http.HandlerFunc {
-	b.registerTemplate(name)
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("serving template %s", name)
-		handler(&DynamicHandlerFuncParams{b.Router, b.Templates[name]}, w, r)
-	}
-}
-
-// initDefaultTemplates initializes templates that are used everywhere
-func (b *Bean) registerTemplate(name string) {
-	tpl, err := template.ParseFiles(fmt.Sprintf("www/dynamic/%s.html", name))
+	tpl, err := template.ParseFiles("www/dynamic/common.html", fmt.Sprintf("www/dynamic/%s.html", name))
 	if err != nil {
 		log.Fatalf("unable to parse template %s: %s", name, err)
 	}
-	b.Templates[name] = tpl
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("serving template %s", name)
+		handler(&DynamicHandlerFuncParams{b.Router, tpl}, w, r)
+	}
 }
 
 // NewBean creates a new Bean from a configuration path
@@ -98,13 +94,8 @@ func NewBean(cfg_path, log_path string) *Bean {
 
 	result := &Bean{
 		&cfg,
-		make(map[string]*template.Template),
 		r,
 	}
-
-	// load default templates
-	result.registerTemplate("head")
-	result.registerTemplate("tail")
 
 	return result
 }
@@ -114,9 +105,12 @@ func main() {
 	bean := NewBean(*configPath, *logPath)
 
 	// register your dynamic routes here
-	bean.Router.HandleFunc("/", bean.BuildDynamicdHandler(HomeHandler, "home"))
+	bean.Router.HandleFunc("/home.html", bean.BuildDynamicdHandler(HomeHandler, "home"))
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("www/static"))))
 	http.Handle("/", bean.Router)
+
+	log.Printf("bean started, serving pages")
+
 	log.Fatal(http.ListenAndServe(bean.Config.ListenOn, nil))
 }
