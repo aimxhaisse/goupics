@@ -118,7 +118,9 @@ func main() {
 	bean := NewBean(*configPath, *logPath)
 
 	// register your dynamic routes here
-	bean.Router.HandleFunc("/home.html", bean.BuildDynamicdHandler(HomeHandler, "home"))
+	home := bean.BuildDynamicdHandler(HomeHandler, "home")
+	bean.Router.HandleFunc("/", home)
+	bean.Router.HandleFunc("/home.html", home)
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("www/static"))))
 	http.Handle("/", bean.Router)
