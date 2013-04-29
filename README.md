@@ -32,29 +32,27 @@ Real start
 This could be automated but you plan to extend this, so I don't want
 to add any sort of magic there.
 
-    # replace myproject by your project name in the following lines
+    export project_name="myproj"
 
     # clone the project
-    git clone github.com:aimxhaisse/bean myproject
-    cd myproject
+    git clone https://github.com/aimxhaisse/bean.git $project_name
+    cd $project_name
 
-    # rename sources/configs yo your project's name
-
-    # I ensure it's safe with a fresh clone
-    # sed.
+    # rename sources/configs to your project's name
+    for file in $(find . -name 'bean*'); do git mv $file $(echo $file | sed s/bean/${project_name}/); done
 
     # edit the variables at the top of all.bash
     $EDITOR all.bash
 
     # optionally edit the configuration of your website
-    $EDITOR root/myproject.json
+    $EDITOR root/$project_name.json
 
     ./all.bash build
     ./all.bash start
     ./all.bash status
 
     # if this is ok, commit and start to play
-    git commit -am "Having setup myproject from github.com:aimxhaisse/bean"
+    git commit -am "Having setup $project_name from https://github.com/aimxhaisse/bean.git"
 
 Structure
 ---------
