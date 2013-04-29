@@ -1,4 +1,4 @@
-{{ define "head" }}
+{{define "head"}}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -28,19 +28,20 @@
           <a class="brand" href="#">{{.Project}}</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="/home.html">Home</a></li>
-              <li><a href="/about.html">About</a></li>
+              <li {{if isCurrentPage "home" .Name}}class="active"{{end}}>
+		<a href="/home.html">Home</a>
+	      </li>
             </ul>
           </div>
         </div>
       </div>
     </div>
-{{ end }}
+{{end}}
 
-{{ define "tail" }}
+{{define "tail"}}
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
 
   </body>
 </html>
-{{ end }}
+{{end}}

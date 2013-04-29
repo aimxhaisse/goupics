@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -36,19 +37,28 @@ type Bean struct {
 	Router *mux.Router // Router to all requests	
 }
 
-// Parameters common to all pages
+// PageParams holds parameters common to all pages
 type PageParams struct {
 	Name    string // Name of the page (home.html -> "home")
 	Title   string // Title of the page
 	Project string // Name of the project
 }
 
+// HomePageParams holds parameters of the home page
 type HomePageParams struct {
 	PageParams
 }
 
 // DynamicHandlerFunc serves a http request
 type DynamicHandlerFunc func(*DynamicHandlerFuncParams, http.ResponseWriter, *http.Request)
+
+// isCurrentPage is used by templates to correctly print the menu
+func isCurrentPage(args ...interface{}) (bool, error) {
+	if len(args) == 2 {
+		return args[0].(string) == args[1].(string), nil
+	}
+	return false, errors.New("isCurrentPage: requires two arguments")
+}
 
 // HomeHandler is a DynamicHandlerFunc that serves the home page
 func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
@@ -60,10 +70,13 @@ func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Req
 
 // BuildHandler maps DynamicHandlerFunc to http.HandlerFunc
 func (b *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, name string) http.HandlerFunc {
-	tpl, err := template.ParseFiles("www/dynamic/common.html", fmt.Sprintf("www/dynamic/%s.html", name))
+	tpl := template.New(name)
+	tpl.Funcs(template.FuncMap{"isCurrentPage": isCurrentPage})
+	_, err := tpl.ParseFiles("www/dynamic/common.html", fmt.Sprintf("www/dynamic/%s.html", name))
 	if err != nil {
 		log.Fatalf("unable to parse template %s: %s", name, err)
 	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("serving template %s", name)
 		handler(&DynamicHandlerFuncParams{b.Router, tpl}, w, r)
@@ -111,6 +124,5 @@ func main() {
 	http.Handle("/", bean.Router)
 
 	log.Printf("bean started, serving pages")
-
 	log.Fatal(http.ListenAndServe(bean.Config.ListenOn, nil))
 }
