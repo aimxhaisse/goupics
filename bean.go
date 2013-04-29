@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
 	"html/template"
@@ -9,18 +10,17 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"flag"
 )
 
 // Flag settings
 var (
 	configPath = flag.String("c", "", "path to the configuration file (e.g, bean.json)")
-	logPath = flag.String("l", "", "path to the log file (e.g, bean.log)")
+	logPath    = flag.String("l", "", "path to the log file (e.g, bean.log)")
 )
 
 // Config contains the various configurations of our project
 type Config struct {
-	ListenOn string // Interface to listen on
+	ListenOn    string // Interface to listen on
 	ProjectName string // Name of the project
 }
 
@@ -39,8 +39,8 @@ type Bean struct {
 
 // Parameters common to all pages
 type PageParams struct {
-	Name	string // Name of the page (home.html -> "home")
-	Title	string // Title of the page
+	Name    string // Name of the page (home.html -> "home")
+	Title   string // Title of the page
 	Project string // Name of the project
 }
 
@@ -57,28 +57,27 @@ func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Req
 }
 
 // BuildHandler maps DynamicHandlerFunc to http.HandlerFunc
-func (g *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, path string) http.HandlerFunc {
+func (b *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, name string) http.HandlerFunc {
+	b.registerTemplate(name)
 	return func(w http.ResponseWriter, r *http.Request) {
-		tpl, in_cache := g.Templates[path]
-		if !in_cache {
-			new_tpl, err := template.ParseFiles(fmt.Sprintf("www/dynamic/%s", path))
-			if err != nil {
-				log.Printf("unable to parse template %s: %s", path, err)
-			}
-			g.Templates[path] = new_tpl
-			tpl = new_tpl
-		}
-		if tpl != nil {
-			log.Printf("serving template %s", path)
-			handler(&DynamicHandlerFuncParams{g.Router, tpl}, w, r)
-		} else {
-			log.Printf("template %s wasn't created", path)
-		}
+		log.Printf("serving template %s", name)
+		handler(&DynamicHandlerFuncParams{b.Router, b.Templates[name]}, w, r)
 	}
+}
+
+// initDefaultTemplates initializes templates that are used everywhere
+func (b *Bean) registerTemplate(name string) {
+	tpl, err := template.ParseFiles(fmt.Sprintf("www/dynamic/%s.html", name))
+	if err != nil {
+		log.Fatalf("unable to parse template %s: %s", name, err)
+	}
+	b.Templates[name] = tpl
 }
 
 // NewBean creates a new Bean from a configuration path
 func NewBean(cfg_path, log_path string) *Bean {
+
+	// load config file
 	file, err := ioutil.ReadFile(cfg_path)
 	if err != nil {
 		log.Fatalf("config error: %v", err)
@@ -88,23 +87,35 @@ func NewBean(cfg_path, log_path string) *Bean {
 	if err != nil {
 		log.Fatalf("config error: %v", err)
 	}
+
+	// redirect logging to a file
 	writer, err := os.OpenFile(log_path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatalf("Unable to open file log: %v", err)
 	}
 	log.SetOutput(writer)
 	r := mux.NewRouter()
-	return &Bean{
+
+	result := &Bean{
 		&cfg,
 		make(map[string]*template.Template),
 		r,
 	}
+
+	// load default templates
+	result.registerTemplate("head")
+	result.registerTemplate("tail")
+
+	return result
 }
 
 func main() {
 	flag.Parse()
 	bean := NewBean(*configPath, *logPath)
-	bean.Router.HandleFunc("/", bean.BuildDynamicdHandler(HomeHandler, "home.html"))
+
+	// register your dynamic routes here
+	bean.Router.HandleFunc("/", bean.BuildDynamicdHandler(HomeHandler, "home"))
+
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("www/static"))))
 	http.Handle("/", bean.Router)
 	log.Fatal(http.ListenAndServe(bean.Config.ListenOn, nil))
