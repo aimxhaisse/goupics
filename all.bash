@@ -6,7 +6,7 @@
 
 # name of the project
 # don't put / in it because it's used to create files.
-PROJECT="bean"
+PROJECT="goupics"
 
 # enable/disable chroot
 # possible values are "yes" or "no".
