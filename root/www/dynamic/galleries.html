@@ -7,11 +7,11 @@
   {{range $gallery := .Galleries}}
   <li class="span4">
     <div class="thumbnail">
-      <a href="/album/{{.Directory}}.html">
+      <a href="/gallery/{{.Directory}}.html">
 	<img src="/static/galleries/{{.Cover}}" />
       </a>
       <div class="caption">
-	<a href="/album/{{.Directory}}.html">
+	<a href="/gallery/{{.Directory}}.html">
           <h5>{{.Title}}</h5>
 	</a>
       </div>
@@ -19,6 +19,10 @@
   </li>
   {{end}}
 </ul>
+
+<a href="/home.html" class="btn btn-primary btn-large">
+  Back to home
+</a>
 
 {{template "tail" .}}
 {{end}}

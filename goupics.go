@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"path/filepath"
 )
 
 // Flag settings
@@ -52,18 +53,34 @@ type HomePageParams struct {
  	Carousel []map[string]string// Images to put in the carousel
 }
 
-// Gallery holds parameters related to a gallery
-type Gallery struct {
-	Directory string // name of the directory
-	Title string // title of the gallery
-	Cover string // path of the cover relative to Directory
-}
-
-// HomePageParams holds parameters of the home page
+// GalleriesPageParams holds parameters of the galleries page
 type GalleriesPageParams struct {
 	PageParams
 	Galleries []Gallery	// Galleries to display
  	Carousel []map[string]string// Images to put in the carousel
+}
+
+// GalleryPageParams holds parameters of the gallery page
+type GalleryPageParams struct {
+	PageParams
+ 	Carousel []map[string]string// Images to put in the carousel
+	Gallery string	// Gallery to display
+	Images []string // Images in the gallery
+}
+
+// ImagePageParams holds parameters of the image page
+type ImagePageParams struct {
+	PageParams
+ 	Carousel []map[string]string// Images to put in the carousel
+	Gallery string // Gallery of the image
+	Path string // Path of the image (relative to Gallery)
+}
+
+// Gallery holds parameters related to a gallery
+type Gallery struct {
+	Directory string // name of the directory
+	Title string // title of the gallery
+	Cover string // path of the cover
 }
 
 // DynamicHandlerFunc serves a http request
@@ -118,6 +135,38 @@ func GalleriesHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *htt
 	err = p.Template.Execute(w, GalleriesPageParams{PageParams{"galleries", p.Config.Title}, galleries, p.Carousel})
 	if err != nil {
 		log.Printf("error while serving template galleries: %s", err)
+	}
+}
+
+// ImageHandler is a DynamicHandlerFunc that serves the image page
+func ImageHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	gallery := vars["gallery"]
+	image := vars["image"]
+
+	err := p.Template.Execute(w, ImagePageParams{PageParams{"image", p.Config.Title}, p.Carousel, gallery, image})
+	if err != nil {
+		log.Printf("error while serving template image: %s", err)
+	}
+}
+
+// GalleryHandler is a DynamicHandlerFunc that serves the gallery page
+func GalleryHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	gallery := vars["gallery"]
+	dir := fmt.Sprintf("www/static/galleries/%s", gallery);
+	var images []string
+	filepath.Walk(dir, func (path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			name := filepath.Base(path)
+			images = append(images, name)
+		}
+		return nil
+	})
+	err := p.Template.Execute(w, GalleryPageParams{PageParams{"gallery", p.Config.Title}, p.Carousel, gallery, images})
+	if err != nil {
+		log.Printf("error while serving template gallery: %s", err)
 	}
 }
 
@@ -188,6 +237,8 @@ func main() {
 	bean.Router.HandleFunc("/", home)
 	bean.Router.HandleFunc("/home.html", home)
 	bean.Router.HandleFunc("/galleries.html", bean.BuildDynamicdHandler(GalleriesHandler, "galleries"))
+	bean.Router.HandleFunc("/gallery/{gallery}.html", bean.BuildDynamicdHandler(GalleryHandler, "gallery"))
+	bean.Router.HandleFunc("/image/{gallery}/{image}.html", bean.BuildDynamicdHandler(ImageHandler, "image"))
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("www/static"))))
 	http.Handle("/", bean.Router)

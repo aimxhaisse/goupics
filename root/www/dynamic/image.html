@@ -1,0 +1,17 @@
+{{define "image"}}
+{{template "head" .}}
+
+<div>
+  <a href="/static/galleries/{{.Gallery}}/{{.Path}}">
+    <img class="img-rounded" src="/static/galleries/{{.Gallery}}/{{.Path}}" />
+  </a>
+</div>
+
+<br />
+
+<a href="/gallery/{{.Gallery}}.html" class="btn btn-primary btn-large">
+  Back to gallery {{.Gallery}}
+</a>
+
+{{template "tail" .}}
+{{end}}
