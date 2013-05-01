@@ -1,5 +1,88 @@
 {{define "home"}}
 {{template "head" .}}
 
+<div class="row">
+  <div class="span8">
+    <h1>Yet another gallery...</h1>
+    <p>
+      This website contains photos I take during my free time, I am no
+      professional and I don't pretend to become one. I expect most of
+      these photos have flaws and little value (hopefully not to
+      me). However I'm interested to learn more and if you have any
+      suggestions, I'd love to hear them. You can contact me at the
+      following email address: <i>mxs [at] sbrk.org</i>.
+    </p>
+
+    <a class="btn btn-primary btn-large">
+      Browse galleries
+    </a>
+    <br /> 
+    <br />
+ </div>
+
+  <div class="span4">
+    <a href="/">
+      <div class="carousel-inner">
+	<div class="item active">
+	  <div class="carousel-caption">
+            <p>Bee at ...</p>
+          </div>
+	  <img src="/static/img/bee.jpg" alt="Yet another bee">
+	</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<hr class="soften">
+
+<div class="row-fluid">
+  <div class="span6">
+    <h3>Usage</h3>
+    <div class="well">
+      <p>
+	Unless specified otherwise, all photos on this website are
+	licensed under a
+	<a rel="license"
+	href="http://creativecommons.org/licenses/by-sa/3.0/deed.en_US">Creative
+	Commons Attribution-ShareAlike 3.0 Unported License</a>.  You
+	can basically do whatever you want to with it, as long as you
+	use the same license and you somehow quote me as the original
+	author of the photo.
+      </p>
+      <br />
+      <center>
+	<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/deed.en_US">
+	  <img src="/static/img/cc.png" />
+	</a>
+      </center>
+    </div>
+  </div>
+
+  <div class="span6">
+    <h3>Sources</h3>
+    <div class="well">
+
+      <p>
+	The code of this website is publicly available and licensed
+	under the <a href="http://www.wtfpl.net/about/">WTFPL license</a>,
+	you are basically free to do whatever you want to with it. You
+	can check it out on my <a href="http://github.com/aimxhaisse/goupics">github</a>
+	page. If you get trouble or have suggestions, do not hesitate
+	to contact me!
+      </p>
+
+      <center>
+	<a rel="license" href="http://www.wtfpl.net/">
+	  <img src="/static/img/wtfpl.png" />
+	</a>
+      </center>
+    </div>
+  </div>
+
+</div>
+
+<hr class="soften">
+
 {{template "tail" .}}
 {{end}}

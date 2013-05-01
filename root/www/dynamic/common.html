@@ -16,7 +16,6 @@
     <link href="/static/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="/static/css/goupics.css" rel="stylesheet">
   </head>
-
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -36,45 +35,47 @@
           </div>
         </div>
       </div>
-
-      <div class="container">
-	<div class="row">
-          <div class="span12">
-            <div id="home-carousel" class="carousel slide">
-              <div class="carousel-inner">
-		{{range $index, $elem := .Carousel}}
-		<div class="item{{if eq $index 0}} active{{end}}">
-		  {{range $key, $value := $elem}}
-		  {{if eq $key "image"}}
-                  <img src="/static/carousel/{{$value}}" />
-		  {{end}}
-		  {{if eq $key "description"}}
-		  <div class="carousel-caption">
-                    <p>{{$value}}</p>
-                  </div>
-		  {{end}}	  
-		  {{end}}
-		</div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="span12">
+          <div id="home-carousel" class="carousel slide">
+            <div class="carousel-inner">
+	      {{range $index, $elem := .Carousel}}
+	      <div class="item{{if eq $index 0}} active{{end}}">
+		{{range $key, $value := $elem}}
+		{{if eq $key "image"}}
+                <img src="/static/carousel/{{$value}}" />
 		{{end}}
-              </div>
-              <a class="left carousel-control my-carousel-control" href="#home-carousel" data-slide="prev">‹</a>
-              <a class="right carousel-control my-carousel-control" href="#home-carousel" data-slide="next">›</a>
+		{{if eq $key "description"}}
+		<div class="carousel-caption">
+                  <p>{{$value}}</p>
+                </div>
+		{{end}}	  
+		{{end}}
+	      </div>
+	      {{end}}
             </div>
+            <a class="left carousel-control my-carousel-control" href="#home-carousel" data-slide="prev">‹</a>
+            <a class="right carousel-control my-carousel-control" href="#home-carousel" data-slide="next">›</a>
           </div>
-	</div>
+        </div>
+      </div>
+      
+      <div class="row">
+	<div class="span12">
 {{end}}
 
 {{define "tail"}}
-      <script src="/static/js/jquery.min.js"></script>
-      <script src="/static/js/bootstrap.min.js"></script>
-
-      <footer>
-	<p class="pull-right"><a href="#">Back to top</a></p>
-	<p>Powered by sbrk.org. &middot; </p>
-      </footer>
-
-    </div>
-
+	<script src="/static/js/jquery.min.js"></script>
+	<script src="/static/js/bootstrap.min.js"></script>
+	<footer>
+	  <p class="pull-right"><a href="#">back to top</a></p>
+	  <p><a href="http://mxs.sbrk.org">Sébastien Rannou</a> - <i>powered by <a href="http://sbrk.org/">sbrk.org</a></i></p>
+	</footer>
+	</div>
+      </div>
+    </div>    
   </body>
 </html>
 {{end}}
