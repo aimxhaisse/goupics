@@ -11,7 +11,7 @@ PROJECT="goupics"
 # enable/disable chroot
 # possible values are "yes" or "no".
 # if you enable chroot, you need to start this script as root
-CHROOT="no"
+CHROOT="yes"
 
 # user to run as
 USER="mxs"
