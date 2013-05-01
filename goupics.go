@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -11,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 )
 
 // Flag settings
@@ -22,13 +22,14 @@ var (
 // Config contains the various configurations of our project
 type Config struct {
 	ListenOn    string // Interface to listen on
-	ProjectName string // Name of the project
+	Title	    string // Title of all pages
 }
 
 // DynamicHandlerFuncParams holds parameters dedicated to a page handler
 type DynamicHandlerFuncParams struct {
 	Router   *mux.Router        // Router of the request
 	Template *template.Template // Template of the dynamic page
+	Config   *Config            // Goupics' configuration
 }
 
 // Bean holds variables common to all handlers
@@ -41,28 +42,57 @@ type Bean struct {
 type PageParams struct {
 	Name    string // Name of the page (home.html -> "home")
 	Title   string // Title of the page
-	Project string // Name of the project
 }
 
 // HomePageParams holds parameters of the home page
 type HomePageParams struct {
 	PageParams
+	Carousel []map[string]string	// Images to put in the carousel
 }
 
 // DynamicHandlerFunc serves a http request
 type DynamicHandlerFunc func(*DynamicHandlerFuncParams, http.ResponseWriter, *http.Request)
 
-// isCurrentPage is used by templates to correctly print the menu
-func isCurrentPage(args ...interface{}) (bool, error) {
-	if len(args) == 2 {
-		return args[0].(string) == args[1].(string), nil
-	}
-	return false, errors.New("isCurrentPage: requires two arguments")
+// eq reports whether the first argument is equal to any of the remaining arguments.
+// borrowed from a post from rsc
+func eq(args ...interface{}) bool {
+        if len(args) == 0 {
+                return false
+        }
+        x := args[0]
+        switch x := x.(type) {
+        case string, int, int64, byte, float32, float64:
+                for _, y := range args[1:] {
+                        if x == y {
+                                return true
+                        }
+                }
+                return false
+        }
+
+        for _, y := range args[1:] {
+                if reflect.DeepEqual(x, y) {
+                        return true
+                }
+        }
+        return false
 }
 
 // HomeHandler is a DynamicHandlerFunc that serves the home page
 func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
-	err := p.Template.Execute(w, HomePageParams{PageParams{"home", "Title", "Project Name"}})
+	var carousel_items []map[string]string
+
+	file, err := ioutil.ReadFile("www/static/carousel/carousel.json")
+	if err != nil {
+		log.Printf("carousel error: %v", err)
+	} else {
+		err = json.Unmarshal(file, &carousel_items)
+		if err != nil {
+			log.Printf("carousel error: %v", err)
+		}
+	}
+
+	err = p.Template.Execute(w, HomePageParams{PageParams{"home", p.Config.Title}, carousel_items})
 	if err != nil {
 		log.Printf("error while serving template home: %s", err)
 	}
@@ -71,7 +101,7 @@ func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Req
 // BuildHandler maps DynamicHandlerFunc to http.HandlerFunc
 func (b *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, name string) http.HandlerFunc {
 	tpl := template.New(name)
-	tpl.Funcs(template.FuncMap{"isCurrentPage": isCurrentPage})
+	tpl.Funcs(template.FuncMap{"eq": eq})
 	_, err := tpl.ParseFiles("www/dynamic/common.html", fmt.Sprintf("www/dynamic/%s.html", name))
 	if err != nil {
 		log.Fatalf("unable to parse template %s: %s", name, err)
@@ -79,7 +109,7 @@ func (b *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, name string) htt
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("serving template %s", name)
-		handler(&DynamicHandlerFuncParams{b.Router, tpl}, w, r)
+		handler(&DynamicHandlerFuncParams{b.Router, tpl, b.Config}, w, r)
 	}
 }
 
