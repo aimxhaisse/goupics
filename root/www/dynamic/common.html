@@ -23,13 +23,15 @@
           <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
           </button>
           <a class="brand" href="#">{{.Title}}</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
 	      <li {{if eq "home" .Name}}class="active"{{end}}>
 		<a href="/home.html">Home</a>
+	      </li>
+	      <li {{if eq "galleries" .Name}}class="active"{{end}}>
+		<a href="/galleries.html">Galleries</a>
 	      </li>
             </ul>
           </div>
@@ -67,6 +69,7 @@
 {{end}}
 
 {{define "tail"}}
+        <hr class="soften" />
 	<script src="/static/js/jquery.min.js"></script>
 	<script src="/static/js/bootstrap.min.js"></script>
 	<footer>

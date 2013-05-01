@@ -1,0 +1,24 @@
+{{define "galleries"}}
+{{template "head" .}}
+
+<h1>Galleries</h1>
+
+<ul class="thumbnails">
+  {{range $gallery := .Galleries}}
+  <li class="span4">
+    <div class="thumbnail">
+      <a href="/album/{{.Directory}}.html">
+	<img src="/static/galleries/{{.Cover}}" />
+      </a>
+      <div class="caption">
+	<a href="/album/{{.Directory}}.html">
+          <h5>{{.Title}}</h5>
+	</a>
+      </div>
+    </div>
+  </li>
+  {{end}}
+</ul>
+
+{{template "tail" .}}
+{{end}}

@@ -30,12 +30,14 @@ type DynamicHandlerFuncParams struct {
 	Router   *mux.Router        // Router of the request
 	Template *template.Template // Template of the dynamic page
 	Config   *Config            // Goupics' configuration
+ 	Carousel []map[string]string// Images to put in the carousel
 }
 
 // Bean holds variables common to all handlers
 type Bean struct {
 	Config *Config     // Config holds the configuration of Bean
 	Router *mux.Router // Router to all requests	
+ 	Carousel []map[string]string// Images to put in the carousel
 }
 
 // PageParams holds parameters common to all pages
@@ -47,7 +49,21 @@ type PageParams struct {
 // HomePageParams holds parameters of the home page
 type HomePageParams struct {
 	PageParams
-	Carousel []map[string]string	// Images to put in the carousel
+ 	Carousel []map[string]string// Images to put in the carousel
+}
+
+// Gallery holds parameters related to a gallery
+type Gallery struct {
+	Directory string // name of the directory
+	Title string // title of the gallery
+	Cover string // path of the cover relative to Directory
+}
+
+// HomePageParams holds parameters of the home page
+type GalleriesPageParams struct {
+	PageParams
+	Galleries []Gallery	// Galleries to display
+ 	Carousel []map[string]string// Images to put in the carousel
 }
 
 // DynamicHandlerFunc serves a http request
@@ -80,21 +96,28 @@ func eq(args ...interface{}) bool {
 
 // HomeHandler is a DynamicHandlerFunc that serves the home page
 func HomeHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
-	var carousel_items []map[string]string
-
-	file, err := ioutil.ReadFile("www/static/carousel/carousel.json")
+	err := p.Template.Execute(w, HomePageParams{PageParams{"home", p.Config.Title}, p.Carousel})
 	if err != nil {
-		log.Printf("carousel error: %v", err)
+		log.Printf("error while serving template home: %s", err)
+	}
+}
+
+// Galleries is a DynamicHandlerFunc that serves the galleries page
+func GalleriesHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
+	var galleries []Gallery
+	file, err := ioutil.ReadFile("www/static/galleries/galleries.json")
+	if err != nil {
+		log.Printf("galleries error: %v", err)
 	} else {
-		err = json.Unmarshal(file, &carousel_items)
+		err = json.Unmarshal(file, &galleries)
 		if err != nil {
-			log.Printf("carousel error: %v", err)
+			log.Printf("galleries error: %v", err)
 		}
 	}
 
-	err = p.Template.Execute(w, HomePageParams{PageParams{"home", p.Config.Title}, carousel_items})
+	err = p.Template.Execute(w, GalleriesPageParams{PageParams{"galleries", p.Config.Title}, galleries, p.Carousel})
 	if err != nil {
-		log.Printf("error while serving template home: %s", err)
+		log.Printf("error while serving template galleries: %s", err)
 	}
 }
 
@@ -109,7 +132,7 @@ func (b *Bean) BuildDynamicdHandler(handler DynamicHandlerFunc, name string) htt
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("serving template %s", name)
-		handler(&DynamicHandlerFuncParams{b.Router, tpl, b.Config}, w, r)
+		handler(&DynamicHandlerFuncParams{b.Router, tpl, b.Config, b.Carousel}, w, r)
 	}
 }
 
@@ -135,9 +158,22 @@ func NewBean(cfg_path, log_path string) *Bean {
 	log.SetOutput(writer)
 	r := mux.NewRouter()
 
+	// All pages have access to the carousel but they can discard it
+	var carousel_items []map[string]string
+	file, err = ioutil.ReadFile("www/static/carousel/carousel.json")
+	if err != nil {
+		log.Printf("carousel error: %v", err)
+	} else {
+		err = json.Unmarshal(file, &carousel_items)
+		if err != nil {
+			log.Printf("carousel error: %v", err)
+		}
+	}
+
 	result := &Bean{
 		&cfg,
 		r,
+		carousel_items,
 	}
 
 	return result
@@ -151,6 +187,7 @@ func main() {
 	home := bean.BuildDynamicdHandler(HomeHandler, "home")
 	bean.Router.HandleFunc("/", home)
 	bean.Router.HandleFunc("/home.html", home)
+	bean.Router.HandleFunc("/galleries.html", bean.BuildDynamicdHandler(GalleriesHandler, "galleries"))
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("www/static"))))
 	http.Handle("/", bean.Router)

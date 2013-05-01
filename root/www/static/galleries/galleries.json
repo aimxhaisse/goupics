@@ -1,0 +1,32 @@
+[
+    {
+	"Directory": "cap_sizun",
+	"Title": "Cap Sizun",
+	"Cover": "cap_sizun/IMG_0949.JPG"
+    },
+    {
+	"Directory": "paris",
+	"Title": "Paris",
+	"Cover": "paris/IMG_0582.JPG"
+    },
+    {
+	"Directory": "ar_elle",
+	"Title": "Ar Elle",
+	"Cover": "ar_elle/IMG_0245.JPG"
+    },
+    {
+	"Directory": "an_inam",
+	"Title": "An Inam",
+	"Cover": "an_inam/IMG_1090.JPG"
+    },
+    {
+	"Directory": "misc",
+	"Title": "Misc",
+	"Cover": "misc/IMG_0850.JPG"
+    },
+    {
+	"Directory": "forest",
+	"Title": "Forest",
+	"Cover": "forest/IMG_0774.JPG"
+    }
+]

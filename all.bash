@@ -61,7 +61,7 @@ function get-uid {
 }
 
 function usage {
-    echo -e "usage: $0 [build|stop|start|restart|status]"
+    echo -e "usage: $0 [build|stop|start|restart|status|convert]"
 }
 
 function check-env {
@@ -110,6 +110,22 @@ case $1 in
     "restart")
 	$0 stop
 	$0 start
+	exit 0
+	;;
+
+    "convert")
+	if [ $# -ne 2 ]
+	then
+	    echo "usage: $0 convert [target-directory]"
+	    exit 1
+	fi
+	target=$2
+	for file in $target/*
+	do
+	    echo $file
+	    convert $file -quality 90 -resize 1920x1080 ${file}.resized
+	    mv ${file}.resized $file
+	done
 	exit 0
 	;;
 
