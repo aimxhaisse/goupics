@@ -1,4 +1,4 @@
 {
-    "ListenOn": ":8080",
+    "ListenOn": "127.0.0.1:8080",
     "Title": "Yet another gallery..."
 }

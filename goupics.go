@@ -10,8 +10,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"path/filepath"
+	"reflect"
 )
 
 // Flag settings
@@ -22,65 +22,65 @@ var (
 
 // Config contains the various configurations of our project
 type Config struct {
-	ListenOn    string // Interface to listen on
-	Title	    string // Title of all pages
+	ListenOn string // Interface to listen on
+	Title    string // Title of all pages
 }
 
 // DynamicHandlerFuncParams holds parameters dedicated to a page handler
 type DynamicHandlerFuncParams struct {
-	Router   *mux.Router        // Router of the request
-	Template *template.Template // Template of the dynamic page
-	Config   *Config            // Goupics' configuration
- 	Carousel []map[string]string// Images to put in the carousel
+	Router   *mux.Router         // Router of the request
+	Template *template.Template  // Template of the dynamic page
+	Config   *Config             // Goupics' configuration
+	Carousel []map[string]string // Images to put in the carousel
 }
 
 // Bean holds variables common to all handlers
 type Bean struct {
-	Config *Config     // Config holds the configuration of Bean
-	Router *mux.Router // Router to all requests	
- 	Carousel []map[string]string// Images to put in the carousel
+	Config   *Config             // Config holds the configuration of Bean
+	Router   *mux.Router         // Router to all requests	
+	Carousel []map[string]string // Images to put in the carousel
 }
 
 // PageParams holds parameters common to all pages
 type PageParams struct {
-	Name    string // Name of the page (home.html -> "home")
-	Title   string // Title of the page
+	Name  string // Name of the page (home.html -> "home")
+	Title string // Title of the page
 }
 
 // HomePageParams holds parameters of the home page
 type HomePageParams struct {
 	PageParams
- 	Carousel []map[string]string// Images to put in the carousel
+	Carousel []map[string]string // Images to put in the carousel
 }
 
 // GalleriesPageParams holds parameters of the galleries page
 type GalleriesPageParams struct {
 	PageParams
-	Galleries []Gallery	// Galleries to display
- 	Carousel []map[string]string// Images to put in the carousel
+	Galleries []Gallery           // Galleries to display
+	Carousel  []map[string]string // Images to put in the carousel
 }
 
 // GalleryPageParams holds parameters of the gallery page
 type GalleryPageParams struct {
 	PageParams
- 	Carousel []map[string]string// Images to put in the carousel
-	Gallery string	// Gallery to display
-	Images []string // Images in the gallery
+	Carousel []map[string]string // Images to put in the carousel
+	Gallery  string              // Gallery to display
+	Images   []string            // Images in the gallery
 }
 
 // ImagePageParams holds parameters of the image page
 type ImagePageParams struct {
 	PageParams
- 	Carousel []map[string]string// Images to put in the carousel
-	Gallery string // Gallery of the image
-	Path string // Path of the image (relative to Gallery)
+	Carousel []map[string]string // Images to put in the carousel
+	Gallery  string              // Gallery of the image
+	Path     string              // Path of the image (relative to Gallery)
 }
 
 // Gallery holds parameters related to a gallery
 type Gallery struct {
 	Directory string // name of the directory
-	Title string // title of the gallery
-	Cover string // path of the cover
+	Title     string // title of the gallery
+	Cover     string // path of the cover
 }
 
 // DynamicHandlerFunc serves a http request
@@ -89,26 +89,26 @@ type DynamicHandlerFunc func(*DynamicHandlerFuncParams, http.ResponseWriter, *ht
 // eq reports whether the first argument is equal to any of the remaining arguments.
 // borrowed from a post from rsc
 func eq(args ...interface{}) bool {
-        if len(args) == 0 {
-                return false
-        }
-        x := args[0]
-        switch x := x.(type) {
-        case string, int, int64, byte, float32, float64:
-                for _, y := range args[1:] {
-                        if x == y {
-                                return true
-                        }
-                }
-                return false
-        }
+	if len(args) == 0 {
+		return false
+	}
+	x := args[0]
+	switch x := x.(type) {
+	case string, int, int64, byte, float32, float64:
+		for _, y := range args[1:] {
+			if x == y {
+				return true
+			}
+		}
+		return false
+	}
 
-        for _, y := range args[1:] {
-                if reflect.DeepEqual(x, y) {
-                        return true
-                }
-        }
-        return false
+	for _, y := range args[1:] {
+		if reflect.DeepEqual(x, y) {
+			return true
+		}
+	}
+	return false
 }
 
 // HomeHandler is a DynamicHandlerFunc that serves the home page
@@ -155,9 +155,9 @@ func ImageHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Re
 func GalleryHandler(p *DynamicHandlerFuncParams, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	gallery := vars["gallery"]
-	dir := fmt.Sprintf("www/static/galleries/%s", gallery);
+	dir := fmt.Sprintf("www/static/galleries/%s", gallery)
 	var images []string
-	filepath.Walk(dir, func (path string, info os.FileInfo, err error) error {
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			name := filepath.Base(path)
 			images = append(images, name)
